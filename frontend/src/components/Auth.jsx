@@ -2,20 +2,22 @@ import {  useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { BACKEND_URL } from "../utils/config"
+import axiosInstance from "../utils/axiosInstance"
+
 export default function Auth({type}) {
     const navigate = useNavigate()
     const [postInputs, setPostInputs] = useState({
-        name : "",
-        username : "",
+        fullName : "",
+        email : "",
         password : ""
     })
 
    async function sendRequest(){
        try {
         
-        const response = await axios.post(`${BACKEND_URL}/api/v1/user/${type=== "signin"? "signin" : "signup"}`, postInputs)
+        const response = await axiosInstance.post(`${BACKEND_URL}/${type=== "signin"? "login" : "create-account"}`, postInputs)
         
-        const jwt = response.data.jwt
+        const jwt = response.data.accessToken
         localStorage.setItem("token", jwt)
         navigate("/home")
        } catch (e) {
@@ -41,7 +43,7 @@ export default function Auth({type}) {
             {type==="signup" ? <LabelledInput label ="Name" placeholder="Type your name" onChange={(e)=>{
                 setPostInputs(c=>({
                     ...c,
-                    name : e.target.value,
+                    fullName : e.target.value,
                     
                 }))
             }}/> : null}
@@ -51,7 +53,7 @@ export default function Auth({type}) {
     <LabelledInput label ="Email" placeholder="abc@gmail.com" onChange={(e)=>{
                 setPostInputs(c=>({
                     ...c,
-                    username : e.target.value,
+                    email : e.target.value,
                     
                 }))
             }}/>
