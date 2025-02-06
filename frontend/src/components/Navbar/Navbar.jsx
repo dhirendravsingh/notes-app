@@ -3,7 +3,7 @@ import {useNavigate} from "react-router-dom"
 import SearchBar from "../SearchBar/SearchBar"
 import { useState } from "react"
 
-const Navbar =({userInfo})=>{
+const Navbar =({userInfo, onSearchNote, handleClearSearch})=>{
     const [searchQuery, setSearchQuery] = useState("")
     const navigate = useNavigate()
     const onLogout =()=>{
@@ -11,11 +11,14 @@ const Navbar =({userInfo})=>{
         navigate("/log-in")  // Fixed path to match Auth component's route
     }
     const handleSearch = ()=>{
-        // Empty function but no error
+        if(searchQuery){ 
+            onSearchNote(searchQuery)
+        }
     }
 
     const onClearSearch = ()=>{
         setSearchQuery("")
+        handleClearSearch()
     }
     
     return (

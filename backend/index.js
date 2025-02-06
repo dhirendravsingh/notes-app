@@ -144,6 +144,71 @@ app.post("/add-note", authenticateToken, async (req,res)=>{
     }
 })
 
+//Handle image
+app.post("/upload-image", authenticateToken, async(req, res)=>{
+    try {
+        if (!req.file || !req.file.image) {
+            console.error("No image file uploaded");
+            return res.status(400).json({ message: "No image file uploaded" });
+        }
+
+        const imageFile = req.file.image;
+        const userId = req.user.user.user._id;
+
+        // Generate unique filename
+        const fileName = `${userId}-${Date.now()}-${imageFile.name}`;
+        const uploadPath = `./uploads/${fileName}`;
+
+        // Move file to uploads directory
+        await imageFile.mv(uploadPath).catch((error) => {
+            console.error("Error moving file to uploads directory:", error);
+            return res.status(500).json({ message: "Internal Server Error" });
+        });
+
+        // Return the image URL
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${fileName}`;
+        
+        return res.status(200).json({
+            imageUrl,
+            message: "Image uploaded successfully"
+        });
+
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+})
+
+//Handle audio
+app.post("/handle-audio", authenticateToken, async (req, res) => {
+  try {
+    const audioFile = req.file.audio;
+    const userId = req.user.user.user._id;
+
+    // Generate unique filename
+    const fileName = `${userId}-${Date.now()}-${audioFile.name}`;
+    const uploadPath = `./uploads/${fileName}`;
+
+    // Move file to uploads directory
+    await audioFile.mv(uploadPath).catch((error) => {
+      console.error("Error moving file to uploads directory:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    });
+
+    // Return the audio URL
+    const audioUrl = `${req.protocol}://${req.get('host')}/uploads/${fileName}`;
+    
+    return res.status(200).json({
+      audioUrl,
+      message: "Audio uploaded successfully"
+    });
+
+  } catch (error) {
+    console.error("Error uploading audio:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+})
+
 //Editing notes
 app.put("/edit-note/:noteId", authenticateToken, async (req,res)=>{
     try {
@@ -252,6 +317,34 @@ app.put("/update-note-favourite/:noteId", authenticateToken, async (req,res)=>{
         return res.status(500).json({message : "Internal Server Error"})
     }
 })
+
+//Search notes
+app.get("/search-notes", authenticateToken, async (req,res)=>{
+    try {
+        const userId = req.user.user.user._id
+        const {query} = req.query
+
+        if(!query){
+            return res.status(400).json({message : "Query is required"})
+        }
+
+        const matchingNotes = await Note.find({
+            userId : userId,
+            $or: [
+                {title : { $regex: new RegExp(query, 'i')}},
+                {content : { $regex: new RegExp(query, 'i')}}
+            ]
+        })
+
+        return res.json({
+            notes : matchingNotes,
+            message : "Search completed successfully"
+         })
+    } catch (error) {
+        return res.status(500).json({message : "Internal Server Error"})
+    }
+})
+
 
 app.listen(8000)
 

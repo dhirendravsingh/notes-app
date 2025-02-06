@@ -1,15 +1,57 @@
 import { useState } from "react"
 import { MdClose } from "react-icons/md"
+import axiosInstance from "../../utils/axiosInstance"
 
-const AddEditNotes = ({onClose, noteData, type})=>{
-    const [title, setTitle] = useState("")
-    const [content, setContent] = useState("")
+const AddEditNotes = ({onClose, noteData, getAllNotes, type})=>{
+    const [title, setTitle] = useState(noteData?.title || "")
+    const [content, setContent] = useState(noteData?.content || "")
 
     const [error, setError] = useState(null)
 
-    const addNewNote= async()=>{}
+    const addNewNote= async()=>{
+        try {
+            const response = await axiosInstance.post("/add-note", {
+                title,
+                content
+            })
 
-    const editNote= async()=>{}
+            if(response.data && response.data.note){
+                getAllNotes()
+                onClose()
+            }
+        } catch (error) {
+            if(
+                error.response && 
+                error.response.data &&
+                error.response.data.message
+            ){
+                setError(error.response.data.message)
+            }
+        }
+    }
+
+    const editNote= async()=>{
+        const noteId = noteData._id
+        try {
+            const response = await axiosInstance.put("/edit-note/"+ noteId, {
+                title,
+                content
+            })
+
+            if(response.data && response.data.note){
+                getAllNotes()
+                onClose()
+            }
+        } catch (error) {
+            if(
+                error.response && 
+                error.response.data &&
+                error.response.data.message
+            ){
+                setError(error.response.data.message)
+            }
+        }
+    }
 
 
     const handleAddNote=()=>{
@@ -62,7 +104,7 @@ const AddEditNotes = ({onClose, noteData, type})=>{
                     {error && <p className="text-red-500 text-xs pt-4">{error}</p>}
 
                 <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium mt-5 p-3 w-full" onClick={handleAddNote}>
-                    ADD
+                    {type === 'edit' ? 'UPDATE' : 'ADD'}
                 </button>
         </div>
     )

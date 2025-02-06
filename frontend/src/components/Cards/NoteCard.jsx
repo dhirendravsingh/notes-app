@@ -1,3 +1,4 @@
+import moment from "moment"
 import {MdCreate, MdDelete, MdOutlineStar} from "react-icons/md"
 
 const NoteCard=({
@@ -14,10 +15,10 @@ const NoteCard=({
             <div className="flex items-center justify-between">
                 <div>
                     <h6 className="text-sm font-medium">{title}</h6>
-                    <span className="text-xs text-slate-500">{date}</span>
+                    <span className="text-xs text-slate-500">{moment(date).format('Do MMM YYYY')}</span>
                 </div>
 
-                <MdOutlineStar className={`icon-btn ${isFavourite? "text-yellow-400" : "text-slate-300"}`} onClick={onFavouriteNote}/>
+                <MdOutlineStar className={`icon-btn ${isFavourite? "text-yellow-400" : "text-slate-300"}`} onClick={()=>{isFavourite === true ? onFavouriteNote(false) : onFavouriteNote(true)}}/>
             </div>
             <p className="text-sx text-slate-600 mt-2">{content?.slice(0,60)}</p>
 
